@@ -1,34 +1,56 @@
 import requests
+from tkinter import *
+from tkinter import ttk
+
+root = Tk()
+root.title("Weather Application")
+
+frame = ttk.Frame(root, padding="3 3 12 12")
+frame.grid(column=0, row=0, sticky=(N,W,E,S))
+root.columnconfigure(0, weight=1)
+root.rowconfigure(0, weight=1)
+
+country = StringVar()
+country_entry = ttk.Entry(frame, width=7, textvariable=country)
+country_entry.grid(column=2, row=1, sticky=(W,E))
+
+root.mainloop()
+
 api_key = open('api_key.txt', 'r').read()
-country = 'US'
-state = input('Please input a state:\n')
-city = input('Please input a city:\n')
-limit = 1
+country = input("Please input country:\n")
 lat = ''
 lon = ''
 
+# access coordinates of location
+if country == "United States":
+    city, state = input(f'Please input a city and state (city, state):\n').split(',')
+    geocode = requests.get(
+        f'http://api.openweathermap.org/geo/1.0/direct?q={city},{state},{country}&limit=1&appid={api_key}')
+else:
+    city = input("Please input a city:\n")
+    geocode = requests.get(
+        f'http://api.openweathermap.org/geo/1.0/direct?q={city},{country}&limit=1&appid={api_key}')
 
-r_latlong = requests.get(f'http://api.openweathermap.org/geo/1.0/direct?q={city},{state},{country}&limit={limit}&appid={api_key}')
+if geocode.status_code == requests.codes.ok:
+    # print(geocode.text)
+    loc = geocode.json()
+    lat = loc[0]['lat']
+    lon = loc[0]['lon']
+    print(f'{lat}, {lon}')
 
-if r_latlong.status_code == 200:
-    print(r_latlong.text)
-    data = r_latlong.json()
-    lat = data[0]['lat']
-    lon = data[0]['lon']
+weather = requests.get(f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}')
+print(weather.text)
 
-r_weather = requests.get(f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}')
+# access weather data
+if weather.status_code == requests.codes.ok:
+    data = weather.json()
+    temp = data["main"]["temp"]
+    humidity = data["main"]["humidity"]
 
-print(lat)
-print(lon)
-print(r_weather)
-
-if r_weather.status_code == 200:
-    print(r_weather.text)
-    data1 = r_weather.json()
-    temp = data1['main']['temp']
-
-fahr_convert = (temp - 273.15) * (9/5) + 32
+fahr_convert = int((temp - 273.15) * (9/5) + 32)
 print(fahr_convert)
+
+
 
 
 
