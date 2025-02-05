@@ -10,37 +10,53 @@ root.title("Weather Application")
 content = ttk.Frame(root)
 
 # country input label, input
-country_label = ttk.Label(content, text="Hello! Please enter your country below:")
-country_input = ttk.Entry(content)
+location = StringVar()
+loc_label = ttk.Label(content, text="Enter location (city, state (if applicable), country): ")
+loc_input = ttk.Entry(content, textvariable=location)
 content.grid(column=0, row=0)
-country_label.grid(column=5, row=0)
-country_input.grid(column=5, row=5)
-
-countryContents = StringVar()
-country_input["textvariable"] = countryContents
+loc_label.grid(column=5, row=0)
+loc_input.grid(column=5, row=5)
 
 # thinking about how to collect user data inputted to input box from tk
 class InputCollector:
-	def __init__(self):
-		user_input = ""
+	def __init__(self, entry):
+		self.inputs = []
+		self.entry = entry.get()
 	
-	def get_input(self, user_input):
-		if user_input == "":
+	def store_inputs(self):
+		# still need to account for potential space at end (or any other invalid inputs)
+		i = 0
+		self.inputs = self.entry.split(",")
+		# removes all spaces and beginning of word
+		for data in self.inputs:
+			if data[0] == " ":
+				new_string = data[1:]
+				self.inputs[i] = new_string
+			# checks if all spaces have been removed
+			if i > 0 and data[0] == "":
+				break
+			i += 1
+
+	def get_inputs(self):
+		return self.inputs
+		
 			
 root.mainloop()
-
+user_loc = InputCollector(location)
+user_loc.store_inputs()
+print(f'Current inputs {user_loc.get_inputs()}')
 api_key = open('api_key.txt', 'r').read()
-country = input("Please input country:\n")
+country = input("please input country:\n")
 lat = ''
 lon = ''
 
 # access coordinates of location
-if country == "United States":
-    city, state = input(f'Please input a city and state (city, state):\n').split(',')
+if country == "united states":
+    city, state = input(f'please input a city and state (city, state):\n').split(',')
     geocode = requests.get(
         f'http://api.openweathermap.org/geo/1.0/direct?q={city},{state},{country}&limit=1&appid={api_key}')
 else:
-    city = input("Please input a city:\n")
+    city = input("please input a city:\n")
     geocode = requests.get(
         f'http://api.openweathermap.org/geo/1.0/direct?q={city},{country}&limit=1&appid={api_key}')
 
