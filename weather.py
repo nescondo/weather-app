@@ -2,18 +2,31 @@ import requests
 from tkinter import *
 from tkinter import ttk
 
+# master frame (parent window)
 root = Tk()
 root.title("Weather Application")
 
-frame = ttk.Frame(root, padding="3 3 12 12")
-frame.grid(column=0, row=0, sticky=(N,W,E,S))
-root.columnconfigure(0, weight=1)
-root.rowconfigure(0, weight=1)
+# overall frame
+content = ttk.Frame(root)
 
-country = StringVar()
-country_entry = ttk.Entry(frame, width=7, textvariable=country)
-country_entry.grid(column=2, row=1, sticky=(W,E))
+# country input label, input
+country_label = ttk.Label(content, text="Hello! Please enter your country below:")
+country_input = ttk.Entry(content)
+content.grid(column=0, row=0)
+country_label.grid(column=5, row=0)
+country_input.grid(column=5, row=5)
 
+countryContents = StringVar()
+country_input["textvariable"] = countryContents
+
+# thinking about how to collect user data inputted to input box from tk
+class InputCollector:
+	def __init__(self):
+		user_input = ""
+	
+	def get_input(self, user_input):
+		if user_input == "":
+			
 root.mainloop()
 
 api_key = open('api_key.txt', 'r').read()
