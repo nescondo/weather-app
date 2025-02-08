@@ -2,6 +2,8 @@ import requests
 from tkinter import *
 from tkinter import ttk
 
+api_key = open('api_key.txt', 'r').read()
+
 # master frame (parent window)
 root = Tk()
 root.title("Weather Application")
@@ -17,13 +19,18 @@ content.grid(column=0, row=0)
 loc_label.grid(column=5, row=0)
 loc_input.grid(column=5, row=5)
 
-# thinking about how to collect user data inputted to input box from tk
+# TO-DO:
+# Account for capitalization
+# Account for invalid characters
 class InputCollector:
 	def __init__(self, entry):
 		self.inputs = []
 		self.entry = entry.get()
+		self.country = ""
+		self.city = ""
+		self.state = ""
 	
-	def store_inputs(self):
+	def format_inputs(self):
 		# still need to account for potential space at end (or any other invalid inputs)
 		i = 0
 		self.inputs = self.entry.split(",")
@@ -36,16 +43,54 @@ class InputCollector:
 			if i > 0 and data[0] == "":
 				break
 			i += 1
+		
+		for data in self.inputs:
+			if len(self.inputs) == 3:
+				self.country = self.inputs[2]
+				self.state = self.inputs[1]
+				self.city = self.inputs[0]
+			elif len(self.inputs) == 2:
+				self.country = self.inputs[1]
+				self.city = self.inputs[0]
+			else:
+				print("Invalid location")
 
 	def get_inputs(self):
 		return self.inputs
+	
+	def format_data(self):
+		if self.state != "":	
+			geocode = requests.get(f'http://api.openweathermap.org/geo/1.0/direct?q={self.city},{self.state},{self.country}&limit=1&appid={api_key}')
+		else:
+			geocode = requests.get(f'http://api.openweathermap.org/geo/1.0/direct?q={self.city},{self.country}&limit=1&appid={api_key}')
+		
+		if geocode.status_code == requests.codes.ok:
+			location = geocode.json()
+			lat = location[0]['lat']
+			lon = location[0]['lon']
+		
+		weather = requests.get(f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}')
+		print(weather.text)
+		
+
+			
+			
+			
+			
+
+class InputEditor:
+	def __init__(self, data):
+		self.data = data
+	
+	#def get_temp(data):
+		
 		
 			
 root.mainloop()
 user_loc = InputCollector(location)
-user_loc.store_inputs()
+user_loc.format_inputs()
 print(f'Current inputs {user_loc.get_inputs()}')
-api_key = open('api_key.txt', 'r').read()
+user_loc.format_data()
 country = input("please input country:\n")
 lat = ''
 lon = ''
@@ -67,7 +112,6 @@ if geocode.status_code == requests.codes.ok:
     lon = loc[0]['lon']
     print(f'{lat}, {lon}')
 
-weather = requests.get(f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}')
 print(weather.text)
 
 # access weather data
