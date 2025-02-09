@@ -2,6 +2,8 @@ import requests
 from tkinter import *
 from tkinter import ttk
 
+degree_sign = u'\N{DEGREE SIGN}'
+
 api_key = open('api_key.txt', 'r').read()
 
 # master frame (parent window)
@@ -29,6 +31,7 @@ class InputCollector:
 		self.country = ""
 		self.city = ""
 		self.state = ""
+		self.weather_data = None
 	
 	def format_inputs(self):
 		# still need to account for potential space at end (or any other invalid inputs)
@@ -70,27 +73,38 @@ class InputCollector:
 			lon = location[0]['lon']
 		
 		weather = requests.get(f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}')
-		print(weather.text)
+		self.weather_data = weather.json()
+
+	def get_weather_data(self):
+		return self.weather_data
 		
-
-			
-			
-			
-			
-
-class InputEditor:
-	def __init__(self, data):
-		self.data = data
+class WeatherInfo:
+	def __init__(self, weather_data):
+		self.weather_data = weather_data
 	
-	#def get_temp(data):
-		
-		
-			
+	def get_temp(self):
+		temp_dict = self.weather_data["main"]
+		main_temp = temp_dict["temp"]
+		fahrenheit = int((main_temp - 273.15) * (9/5) + 32)
+		return fahrenheit
+
+# temperature label - currently installing tcod library for unicode
+temp_label = ttk.Label(content, text="Temperature: ")
+temp_label.grid(column=5, row=10)
+	
 root.mainloop()
+
 user_loc = InputCollector(location)
 user_loc.format_inputs()
-print(f'Current inputs {user_loc.get_inputs()}')
 user_loc.format_data()
+weather_data = user_loc.get_weather_data()
+
+# weather info object
+weather_stuff = WeatherInfo(weather_data)
+one_temp = weather_stuff.get_temp()
+temp = f'Temperature: {one_temp}{degree_sign}F'
+print(temp)
+
 country = input("please input country:\n")
 lat = ''
 lon = ''
@@ -120,7 +134,6 @@ if weather.status_code == requests.codes.ok:
     temp = data["main"]["temp"]
     humidity = data["main"]["humidity"]
 
-fahr_convert = int((temp - 273.15) * (9/5) + 32)
 print(fahr_convert)
 
 
