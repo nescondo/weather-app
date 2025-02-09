@@ -88,7 +88,7 @@ class WeatherInfo:
 		fahrenheit = int((main_temp - 273.15) * (9/5) + 32)
 		return fahrenheit
 
-# temperature label - currently installing tcod library for unicode
+# temperature label
 temp_label = ttk.Label(content, text="Temperature: ")
 temp_label.grid(column=5, row=10)
 	
